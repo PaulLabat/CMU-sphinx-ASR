@@ -5,6 +5,7 @@ import re
 
 
 def phoneInFile(phone):
+    """Check whether the phone is present in the file. Return True if present."""
     phoneFile = open('etc/frenchtraining.phone', 'r')
     text = phoneFile.read()
     phoneFile.close()
@@ -28,9 +29,11 @@ if __name__ == "__main__":
         if len(word) == 2:  # phones are all 2 characters only
             # reject word that contains characters other than letters
             if re.match("^[a-zA-Z]*$", word):
-                if not phoneInFile(word):
+                if not phoneInFile(word.upper()):
                     phone = open('etc/frenchtraining.phone', 'a')
-                    phone.write(word + '\n')
+                    phone.write(word.upper() + '\n')
                     phone.close()
+    phone = open('etc/frenchtraining.phone', 'a')
+    phone.write('SIL\n')
     phone.close()
     print("Work finished.")

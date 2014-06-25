@@ -1,0 +1,7 @@
+etc/
+frenchtraining_doc/
+frenchtraining_test_doc/
+*.fileids
+*.transcription
+wav/
+*~
