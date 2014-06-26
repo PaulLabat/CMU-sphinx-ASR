@@ -7,6 +7,7 @@ import wave
 import contextlib
 import math
 
+
 def getDuration(fname):
     """Get the duration of the wave file, in second."""
     try:
@@ -48,12 +49,15 @@ def convertFrameList(f):
         i += 1
     return f
 
+def convertFrameToSecond(frame):
+    return frame / 16000.
 
 def splitWavFile(name, splitSize, duration, frameList):
     size = splitSize
     listSplitFrame = []
     previous = 0.
     i = 0
+    # get the list of the ending frame of sentences where we need to cut
     while i < len(frameList):
         if frameList[i] < size:
             previous = frameList[i]
@@ -62,7 +66,23 @@ def splitWavFile(name, splitSize, duration, frameList):
             size += splitSize
         i += 1
     listSplitFrame.append(frameList[len(frameList)-1])
+
+    fileNumber = 1
+    beginFrameInSecond = 0
+    for elem in listSplitFrame:
+        splitFileName = name.replace('.wav', '_' + str(fileNumber) + '.wav')
+        subprocess.Popen(['sox', name, splitFileName, 'trim', str(beginFrameInSecond), str(convertFrameToSecond(elem))], stdout=subprocess.PIPE)
+        print('sox ' + name+' ' + splitFileName+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(convertFrameToSecond(elem)))
+        beginFrameInSecond = convertFrameToSecond(elem + 1)
+        fileNumber += 1
     return listSplitFrame
+
+def returnSfoFileName(name):
+    return name + '.SFO'
+
+def returnWaveFileName(name):
+    return name + '.wav'
+
 
 if __name__ == "__main__":
     os.chdir('wav')
