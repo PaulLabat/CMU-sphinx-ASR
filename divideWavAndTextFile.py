@@ -8,6 +8,7 @@ import contextlib
 import math
 
 def getDuration(fname):
+    """Get the duration of the wave file, in second."""
     try:
         with contextlib.closing(wave.open(fname, 'r')) as f:
             frames = f.getnframes()
@@ -19,13 +20,16 @@ def getDuration(fname):
 
 
 def getMaxSizeSplitFrame(duration):
+    """Return the numbre (in second) of the max size to split the wave file.
+    Return -1 if the file don't need to be split, else return the number of frame"""
     if duration <= 30:
         return -1
     else:
-        return min(30, math.floor((duration * 16000) / 48000))
+        return min(30, math.floor((duration * 16000) / 48000)) * 16000
 
 
 def getEndFramesFromFile(name):
+    """Return a list of the end frame of each sentences."""
     textFile = open(name, 'r')
     txt = textFile.readlines()
     textFile.close()
@@ -33,8 +37,32 @@ def getEndFramesFromFile(name):
     for line in txt:
         tmp = line.split(' ')
         if tmp[0] == 'LBR:':
-            listFrame.append(tmp[1])
+            listFrame.append(tmp[2])
     return listFrame
+
+
+def convertFrameList(f):
+    i = 0
+    while i < len(f):
+        f[i] = int(f[i].replace(',', ''))
+        i += 1
+    return f
+
+
+def splitWavFile(name, splitSize, duration, frameList):
+    size = splitSize
+    listSplitFrame = []
+    previous = 0.
+    i = 0
+    while i < len(frameList):
+        if frameList[i] < size:
+            previous = frameList[i]
+        else:
+            listSplitFrame.append(previous)
+            size += splitSize
+        i += 1
+    listSplitFrame.append(frameList[len(frameList)-1])
+    return listSplitFrame
 
 if __name__ == "__main__":
     os.chdir('wav')
@@ -59,7 +87,8 @@ if __name__ == "__main__":
                         if name != '\n':
                             duration = getDuration(name + '.wav')
                             if duration is not None:
+                                #part to process every files
                                 #print('File ' + name + '.wav = ' + str(duration) + ' seconde')
                                 #print(getEndFramesFromFile(name+'.SFO'))
-                                print('File ' + name + '.wav = ' + str(duration) + ' seconde. Splitsize : ' +str(getMaxSizeSplitFrame(duration)))
+                                #print('File ' + name + '.wav = ' + str(duration) + ' seconde. Splitsize : ' +str(getMaxSizeSplitFrame(duration)))
         os.chdir('..')  # leave folder
