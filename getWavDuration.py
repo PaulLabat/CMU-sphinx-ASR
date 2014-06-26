@@ -37,9 +37,8 @@ if __name__ == "__main__":
     durationArray[6][1] = 0
     durationArray[7][1] = 0
 
-    max = 0
-    min = 800
-
+    maxL = 0
+    minL = 800
 
     os.chdir('wav')
     listing = subprocess.Popen('ls', stdout=subprocess.PIPE)
@@ -57,10 +56,10 @@ if __name__ == "__main__":
                 if elem != ' ' or elem != '\n':
                     duration = getDuration(elem)
                     if duration is not None:
-                        if max < duration:
-                            max = duration
-                        if min > duration:
-                            min = duration
+                        if maxL < duration:
+                            maxL = duration
+                        if minL > duration:
+                            minL = duration
                         if duration < 30:
                             durationArray[0][1] += 1
                         elif duration >= 30 and duration < 40:
@@ -83,5 +82,5 @@ if __name__ == "__main__":
         print(durationArray[i][0] + ' = ' + str(durationArray[i][1]))
         nbrFiles += durationArray[i][1]
     print("Numbre of wave files : " + str(nbrFiles))
-    print('Max = '+str(max))
-    print('Min = '+str(min))
+    print('Max = ' + str(maxL))
+    print('Min = ' + str(minL))

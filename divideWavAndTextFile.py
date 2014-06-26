@@ -5,6 +5,7 @@ import os
 import subprocess
 import wave
 import contextlib
+import math
 
 def getDuration(fname):
     try:
@@ -17,10 +18,23 @@ def getDuration(fname):
         return None
 
 
-def getSplitFrame(duration, fileName):
+def getMaxSizeSplitFrame(duration):
     if duration <= 30:
         return -1
+    else:
+        return min(30, math.floor((duration * 16000) / 48000))
 
+
+def getEndFramesFromFile(name):
+    textFile = open(name, 'r')
+    txt = textFile.readlines()
+    textFile.close()
+    listFrame = []
+    for line in txt:
+        tmp = line.split(' ')
+        if tmp[0] == 'LBR:':
+            listFrame.append(tmp[1])
+    return listFrame
 
 if __name__ == "__main__":
     os.chdir('wav')
@@ -44,6 +58,8 @@ if __name__ == "__main__":
                     for name in tmp:
                         if name != '\n':
                             duration = getDuration(name + '.wav')
-                            if duration != None:
-                                print('File ' + name + '.wav = ' + str(duration) + ' seconde')
+                            if duration is not None:
+                                #print('File ' + name + '.wav = ' + str(duration) + ' seconde')
+                                #print(getEndFramesFromFile(name+'.SFO'))
+                                print('File ' + name + '.wav = ' + str(duration) + ' seconde. Splitsize : ' +str(getMaxSizeSplitFrame(duration)))
         os.chdir('..')  # leave folder
