@@ -69,14 +69,16 @@ def getListSplitFrame(splitSize, frameList):
 
 
 def splitWavFile(name, splitSize, frameList):
-    fileNumber = 1
+    """Split one wave file into several smaller. Return the number of file created."""
+    fileNumber = 0
     beginFrameInSecond = 0
     for elem in listSplitFrame:
         splitFileName = name.replace('.wav', '_' + str(fileNumber) + '.wav')
         subprocess.Popen(['sox', name, splitFileName, 'trim', str(beginFrameInSecond), str(convertFrameToSecond(elem))], stdout=subprocess.PIPE)
-        print('sox ' + name+' ' + splitFileName+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(convertFrameToSecond(elem)))
+        #print('sox ' + name+' ' + splitFileName+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(convertFrameToSecond(elem)))
         beginFrameInSecond = convertFrameToSecond(elem + 1)
         fileNumber += 1
+    return fileNumber
 
 
 def returnSfoFileName(name):
@@ -87,7 +89,7 @@ def returnWaveFileName(name):
     return name + '.wav'
 
 
-def getTextFromSfoFile(name, splitFrameList):
+def getTextFromSfoFile(name):
     """Return the text associated to the ending frame of the sentence"""
     textFile = open(name, 'r')
     txt = textFile.readlines()
@@ -103,8 +105,31 @@ def getTextFromSfoFile(name, splitFrameList):
                     i += 1
                 else:
                     string = string + ' ' + elem
-            sentences[tmp[2]] = string.replace('\r\r', '')
+            index = int(tmp[2].replace(',', ''))
+            sentences[index] = string.replace('\r\r', '')
     return sentences
+
+
+def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame):
+    """Function that generate the sfo et text file associated to each audio file."""
+    begin = 0
+    for i in range(numberOfFile):
+        listSentence = []
+        for key in sentences.keys():
+            if key > begin and key <= listSplitFrame[i]:
+                listSentence.append(key)
+                #print('0< ' + str(key)+ ' < '+ str(listSplitFrame[i]))
+        listSentence.sort()
+        sfo = open(name+'_'+str(i)+'.SFO', 'w')
+        sfo.write('TXF: '+name+'_'+str(i)+'.txt\n')
+        sfo.close()
+        txt = open(name+'_'+str(i)+'.txt', 'w')
+        for elem in listSentence:
+            if elem <= listSplitFrame[i]:
+                txt.write('TXT: ' + sentences[elem] + '\n')
+        txt.close()
+        begin = listSplitFrame[i] + 1
+
 
 if __name__ == "__main__":
     os.chdir('wav')
