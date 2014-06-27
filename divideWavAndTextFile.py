@@ -42,16 +42,21 @@ def getEndFramesFromFile(name):
 
 
 def convertFrameList(f):
+    """Remove the coma that are still attached to the frame number."""
     i = 0
     while i < len(f):
         f[i] = int(f[i].replace(',', ''))
         i += 1
     return f
 
+
 def convertFrameToSecond(frame):
+    """Return the time in second equivalent to the number of frame."""
     return frame / 16000.
 
+
 def getListSplitFrame(splitSize, frameList):
+    """Get a list of the frame where the audio file nedd to be cut."""
     size = splitSize
     listSplitFrame = []
     previous = 0.
@@ -68,14 +73,20 @@ def getListSplitFrame(splitSize, frameList):
     return listSplitFrame
 
 
+def getLength(begin,end):
+    """Return the length between two different time in seconde."""
+    return end - begin
+
+
 def splitWavFile(name, splitSize, frameList):
     """Split one wave file into several smaller. Return the number of file created."""
     fileNumber = 0
     beginFrameInSecond = 0
     for elem in listSplitFrame:
         splitFileName = name.replace('.wav', '_' + str(fileNumber) + '.wav')
-        subprocess.Popen(['sox', name, splitFileName, 'trim', str(beginFrameInSecond), str(convertFrameToSecond(elem))], stdout=subprocess.PIPE)
-        #print('sox ' + name+' ' + splitFileName+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(convertFrameToSecond(elem)))
+        length = getLength(beginFrameInSecond, convertFrameToSecond(elem))
+        subprocess.Popen(['sox', name, splitFileName, 'trim', str(beginFrameInSecond), str(length)], stdout=subprocess.PIPE)
+        print('sox ' + name+' ' + str(splitFileName)+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(length))
         beginFrameInSecond = convertFrameToSecond(elem + 1)
         fileNumber += 1
     return fileNumber
@@ -159,3 +170,16 @@ if __name__ == "__main__":
                                 #print(getEndFramesFromFile(name+'.SFO'))
                                 #print('File ' + name + '.wav = ' + str(duration) + ' seconde. Splitsize : ' +str(getMaxSizeSplitFrame(duration)))
         os.chdir('..')  # leave folder
+
+
+
+    # example : how to use the function above to generate the files (wave, sfo and txt)
+    #f = 'AAS1870001'
+    #duration = getDuration(returnWaveFileName(f))
+    #frameList = getEndFramesFromFile(returnSfoFileName(f))
+    #frameList = convertFrameList(frameList)
+    #splitSize = getMaxSizeSplitFrame(duration)
+    #listSplitFrame = getListSplitFrame(splitSize, frameList)
+    #numberOfFile = splitWavFile(returnWaveFileName(f), splitSize, frameList)
+    #sentences = getTextFromSfoFile(returnSfoFileName(f))
+    #generateSfoAndTextFile(numberOfFile, sentences, f, listSplitFrame)
