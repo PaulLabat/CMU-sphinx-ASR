@@ -82,8 +82,29 @@ def splitWavFile(name, splitSize, frameList):
 def returnSfoFileName(name):
     return name + '.SFO'
 
+
 def returnWaveFileName(name):
     return name + '.wav'
+
+
+def getTextFromSfoFile(name, splitFrameList):
+    """Return the text associated to the ending frame of the sentence"""
+    textFile = open(name, 'r')
+    txt = textFile.readlines()
+    textFile.close()
+    sentences = dict()
+    for line in txt:
+        tmp = line.split(' ')
+        if tmp[0] == 'LBR:':
+            i = 0
+            string = ''
+            for elem in tmp:
+                if i < 6:
+                    i += 1
+                else:
+                    string = string + ' ' + elem
+            sentences[tmp[2]] = string.replace('\r\r', '')
+    return sentences
 
 if __name__ == "__main__":
     os.chdir('wav')
