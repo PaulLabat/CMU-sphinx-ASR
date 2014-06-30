@@ -35,13 +35,13 @@ def generateFileids(database):
 								fileIdsTest.write(line+'/'+name+'\n')#write speaker_test/wavName
 								textFileName = searchForTxf(name)
 								if textFileName is not None :
-									addTextToTranscription('frenchtraining_test_doc', textFileName, fileTranscriptionTrain, line)
+									addTextToTranscription('frenchtraining_test_doc', textFileName, fileTranscriptionTest, name)
 
 							else:
 								fileIdsTrain.write(line+'/'+name+'\n')#write speaker/wavName
 								textFileName = searchForTxf(name)
 								if textFileName is not None :
-									addTextToTranscription('frenchtraining_doc', textFileName,fileTranscriptionTest,line)
+									addTextToTranscription('frenchtraining_doc', textFileName,fileTranscriptionTrain, name)
 
 			
 		os.chdir('..')#leave folder
@@ -51,7 +51,7 @@ def generateFileids(database):
 	fileIdsTrain.close()
 	fileIdsTest.close()
 
-def addTextToTranscription(folder, fileName, file, speakerName):
+def addTextToTranscription(folder, fileName, file, name):
 	oldPath = os.getcwd()
 	os.chdir('../..')
 	os.chdir(folder)#enter the folder with .txt files
@@ -67,10 +67,10 @@ def addTextToTranscription(folder, fileName, file, speakerName):
 			elif 'EXT: ' in line:
 				txt = txt + line.replace('EXT: ', '')
 	txt = txt.replace('\n',' ')
-	file.write('<s>')
-	file.write(txt)
-	file.write('</s>'+' ('+speakerName+')\n')
-
+	if txt != '':
+		file.write('<s>')
+		file.write(txt)
+		file.write('</s>'+' ('+name+')\n')
 
 	textFile.close()
 	os.chdir('..')

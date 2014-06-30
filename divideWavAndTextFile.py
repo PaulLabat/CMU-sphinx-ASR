@@ -56,22 +56,35 @@ def convertFrameToSecond(frame):
 def getListSplitFrame(splitSize, frameList):
     size = splitSize
     listSplitFrame = []
-    previous = 0.
-    i = 0
+    previous = 0
     # get the list of the ending frame of sentences where we need to cut
-    while i < len(frameList):
-        if frameList[i] < size:
-            previous = frameList[i]
-        else:
+    for elem in frameList:
+        if elem > size:
             listSplitFrame.append(previous)
             size += splitSize
-        i += 1
-    listSplitFrame.append(frameList[len(frameList) - 1])
+        else:
+            previous = elem
     return listSplitFrame
+
+#problem with the last file
+
+    #while i < len(frameList):
+        #if frameList[i] < size:
+            #previous = frameList[i]
+        #else:
+            #listSplitFrame.append(previous)
+            #size += splitSize
+        #i += 1
+    #listSplitFrame.append(frameList[len(frameList) - 1])
+    #return listSplitFrame
 
 
 def getLength(begin,end):
     """Return the length between two different time in seconde."""
+    print('begin : '+str(begin))
+    print('end : ' + str(end))
+    l = end-begin
+    print('length : '+str(l))
     return end - begin
 
 
@@ -123,9 +136,11 @@ def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame, folder
     begin = 0
     for i in range(numberOfFile):
         listSentence = []
+        # gather all sentences with a begining frame inferior to a certain number
         for key in sentences.keys():
             if key > begin and key <= listSplitFrame[i]:
                 listSentence.append(key)
+
         listSentence.sort()
         sfo = open('../../wav2/' + folder + '/' + name + '_' + str(i) + '.SFO', 'w')
         sfo.write('TXF: ' + name + '_' + str(i) + '.txt\n')
@@ -138,7 +153,7 @@ def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame, folder
             if elem <= listSplitFrame[i]:
                 txt.write('TXT: ' + sentences[elem] + '\n')
         txt.close()
-        begin = listSplitFrame[i-1]
+        begin = listSplitFrame[i]
 
 if __name__ == "__main__":
     os.chdir('wav')
