@@ -6,6 +6,8 @@ import subprocess
 import wave
 import contextlib
 import math
+import re
+
 
 def getDuration(fname):
     """Get the duration of the wave file, in second."""
@@ -42,21 +44,16 @@ def getEndFramesFromFile(name):
 
 
 def convertFrameList(f):
-    """Remove the coma that are still attached to the frame number."""
     i = 0
     while i < len(f):
         f[i] = int(f[i].replace(',', ''))
         i += 1
     return f
 
-
 def convertFrameToSecond(frame):
-    """Return the time in second equivalent to the number of frame."""
     return frame / 16000.
 
-
 def getListSplitFrame(splitSize, frameList):
-    """Get a list of the frame where the audio file nedd to be cut."""
     size = splitSize
     listSplitFrame = []
     previous = 0.
@@ -78,15 +75,15 @@ def getLength(begin,end):
     return end - begin
 
 
-def splitWavFile(name, splitSize, frameList):
+def splitWavFile(name, splitSize, frameList, folder):
     """Split one wave file into several smaller. Return the number of file created."""
     fileNumber = 0
     beginFrameInSecond = 0
-    for elem in listSplitFrame:
+    for elem in frameList:
         splitFileName = name.replace('.wav', '_' + str(fileNumber) + '.wav')
         length = getLength(beginFrameInSecond, convertFrameToSecond(elem))
-        subprocess.Popen(['sox', name, splitFileName, 'trim', str(beginFrameInSecond), str(length)], stdout=subprocess.PIPE)
-        print('sox ' + name+' ' + str(splitFileName)+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(length))
+        subprocess.Popen(['sox', name, '../../wav2/' + folder + '/' + splitFileName, 'trim', str(beginFrameInSecond), str(length)], stdout=subprocess.PIPE)
+        print('sox ' + name+' ' +'../../wav2/' + folder + '/'  + str(splitFileName)+' ' + 'trim ' + str(beginFrameInSecond)+' ' + str(length))
         beginFrameInSecond = convertFrameToSecond(elem + 1)
         fileNumber += 1
     return fileNumber
@@ -121,7 +118,7 @@ def getTextFromSfoFile(name):
     return sentences
 
 
-def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame):
+def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame, folder):
     """Function that generate the sfo et text file associated to each audio file."""
     begin = 0
     for i in range(numberOfFile):
@@ -129,18 +126,19 @@ def generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame):
         for key in sentences.keys():
             if key > begin and key <= listSplitFrame[i]:
                 listSentence.append(key)
-                #print('0< ' + str(key)+ ' < '+ str(listSplitFrame[i]))
         listSentence.sort()
-        sfo = open(name+'_'+str(i)+'.SFO', 'w')
-        sfo.write('TXF: '+name+'_'+str(i)+'.txt\n')
+        sfo = open('../../wav2/' + folder + '/' + name + '_' + str(i) + '.SFO', 'w')
+        sfo.write('TXF: ' + name + '_' + str(i) + '.txt\n')
         sfo.close()
-        txt = open(name+'_'+str(i)+'.txt', 'w')
+        if folder.find('_test') != -1:
+            txt = open('../../frenchtraining_test_doc/' + name + '_' + str(i) + '.txt', 'w')
+        else:
+            txt = open('../../frenchtraining_doc/' + name + '_' + str(i) + '.txt', 'w')
         for elem in listSentence:
             if elem <= listSplitFrame[i]:
                 txt.write('TXT: ' + sentences[elem] + '\n')
         txt.close()
-        begin = listSplitFrame[i] + 1
-
+        begin = listSplitFrame[i-1]
 
 if __name__ == "__main__":
     os.chdir('wav')
@@ -162,24 +160,24 @@ if __name__ == "__main__":
                     tmp = elem.split('.SFO\n')
                     # for each text file
                     for name in tmp:
-                        if name != '\n':
-                            duration = getDuration(name + '.wav')
-                            if duration is not None:
-                                #part to process every files
-                                #print('File ' + name + '.wav = ' + str(duration) + ' seconde')
-                                #print(getEndFramesFromFile(name+'.SFO'))
-                                #print('File ' + name + '.wav = ' + str(duration) + ' seconde. Splitsize : ' +str(getMaxSizeSplitFrame(duration)))
+                        if not re.match("^[a-zA-Z]*$", name):
+                            if os.path.isfile(name+'.wav'):
+                                folder = os.path.split(os.path.abspath('./'))[1]
+                                if not os.path.isdir('../../wav2/' + folder):
+                                    os.makedirs('../../wav2/' + folder)
+                                duration = getDuration(returnWaveFileName(name))
+                                frameList = getEndFramesFromFile(returnSfoFileName(name))
+                                frameList = convertFrameList(frameList)
+                                splitSize = getMaxSizeSplitFrame(duration)
+                                if splitSize == -1:
+                                    print('file '+name+' less than 30sec')
+                                    subprocess.call('cp '+name+'.SFO ../../wav2/'+folder, shell=True)
+                                    subprocess.call('cp '+name+'.wav ../../wav2/'+folder, shell=True)
+                                else:
+                                    listSplitFrame = getListSplitFrame(splitSize, frameList)
+                                    numberOfFile = splitWavFile(returnWaveFileName(name), splitSize, listSplitFrame, folder)
+                                    sentences = getTextFromSfoFile(returnSfoFileName(name))
+                                    generateSfoAndTextFile(numberOfFile, sentences, name, listSplitFrame, folder)
+
+
         os.chdir('..')  # leave folder
-
-
-
-    # example : how to use the function above to generate the files (wave, sfo and txt)
-    #f = 'AAS1870001'
-    #duration = getDuration(returnWaveFileName(f))
-    #frameList = getEndFramesFromFile(returnSfoFileName(f))
-    #frameList = convertFrameList(frameList)
-    #splitSize = getMaxSizeSplitFrame(duration)
-    #listSplitFrame = getListSplitFrame(splitSize, frameList)
-    #numberOfFile = splitWavFile(returnWaveFileName(f), splitSize, frameList)
-    #sentences = getTextFromSfoFile(returnSfoFileName(f))
-    #generateSfoAndTextFile(numberOfFile, sentences, f, listSplitFrame)
