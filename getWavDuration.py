@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     maxL = 0
     minL = 800
-
+    som = 0
     os.chdir('wav')
     listing = subprocess.Popen('ls', stdout=subprocess.PIPE)
     listing = listing.stdout.read().split('\n')
@@ -56,6 +56,7 @@ if __name__ == "__main__":
                 if elem != ' ' or elem != '\n':
                     duration = getDuration(elem)
                     if duration is not None:
+                        som += duration
                         if maxL < duration:
                             maxL = duration
                         if minL > duration:
@@ -84,3 +85,4 @@ if __name__ == "__main__":
     print("Numbre of wave files : " + str(nbrFiles))
     print('Max = ' + str(maxL))
     print('Min = ' + str(minL))
+    print('Sum of all duration : '+str(som))
