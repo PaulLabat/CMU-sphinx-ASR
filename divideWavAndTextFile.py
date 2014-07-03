@@ -124,7 +124,8 @@ def generateSfoAndTextFiles(numberOfFile, sentences, name, listSplitFrame, folde
 
         listSentence.sort()
         sfo = open('../../wav2/' + folder + '/' + name + '_' + str(i) + '.SFO', 'w')
-        sfo.write('TXF: ' + name + '_' + str(i) + '.txt\n')
+        tmp = 'TXF: ' + name + '_' + str(i) + '.txt\n'
+        sfo.write(tmp)
         sfo.close()
         if folder.find('_test') != -1:
             txt = open('../../frenchtraining_test_doc/' + name + '_' + str(i) + '.txt', 'w')
@@ -132,7 +133,8 @@ def generateSfoAndTextFiles(numberOfFile, sentences, name, listSplitFrame, folde
             txt = open('../../frenchtraining_doc/' + name + '_' + str(i) + '.txt', 'w')
         for elem in listSentence:
             if elem <= listSplitFrame[i]:
-                txt.write('TXT: ' + sentences[elem] + '\n')
+                tmp = 'TXT: ' + sentences[elem] + '\n'
+                txt.write(tmp)
         txt.close()
         begin = listSplitFrame[i]
 

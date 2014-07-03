@@ -6,11 +6,11 @@ import os
 
 
 def generateFileids(database):
-    fileIdsTrain = open(database + '_train.fileids', 'w')
-    fileIdsTest = open(database + '_test.fileids', 'w')
+    fileIdsTrain = open('etc/' + database + '_train.fileids', 'w')
+    fileIdsTest = open('etc/' + database + '_test.fileids', 'w')
 
-    fileTranscriptionTrain = open(database + '_train.transcription', 'w')
-    fileTranscriptionTest = open(database + '_test.transcription', 'w')
+    fileTranscriptionTrain = open('etc/' + database + '_train.transcription', 'w')
+    fileTranscriptionTest = open('etc/' + database + '_test.transcription', 'w')
 
     os.chdir('wav')
     listing = subprocess.Popen('ls', stdout=subprocess.PIPE)
@@ -70,7 +70,8 @@ def addTextToTranscription(folder, fileName, file, name):
     txt = txt.replace('\n', ' ')
     if txt != '':
         file.write('<s>')
-        file.write(txt)
+        txt = txt.replace(',', ' ,')
+        file.write(txt.lower())
         file.write('</s>' + ' (' + name + ')\n')
 
     textFile.close()
