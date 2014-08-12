@@ -57,24 +57,27 @@ def addTextToTranscription(folder, fileName, file, name):
     os.chdir('../..')
     os.chdir(folder)  # enter the folder with .txt files
     fileName = fileName.replace('\r\r', '')
-    textFile = open(fileName, 'r')
-    lines = textFile.readlines()
-    #remove unneccesary text and \n so that it will fit on one line
-    txt = ''
-    for line in lines:
-        if 'SPR: ' not in line or 'EPR' not in line:
-            if 'TXT: ' in line:
-                txt = txt + line.replace('TXT: ', '')
-            elif 'EXT: ' in line:
-                txt = txt + line.replace('EXT: ', '')
-    txt = txt.replace('\n', ' ')
-    if txt != '':
-        file.write('<s>')
-        txt = txt.replace(',', ' ,')
-        file.write(txt.lower())
-        file.write('</s>' + ' (' + name + ')\n')
+    try:
+	    textFile = open(fileName, 'r')
+	    lines = textFile.readlines()
+	    #remove unneccesary text and \n so that it will fit on one line
+	    txt = ''
+	    for line in lines:
+		if 'SPR: ' not in line or 'EPR' not in line:
+		    if 'TXT: ' in line:
+		        txt = txt + line.replace('TXT: ', '')
+		    elif 'EXT: ' in line:
+		        txt = txt + line.replace('EXT: ', '')
+	    txt = txt.replace('\n', ' ')
+	    if txt != '':
+		file.write('<s>')
+		txt = txt.replace(',', ' ,')
+		file.write(txt.lower())
+		file.write('</s>' + ' (' + name + ')\n')
 
-    textFile.close()
+	    textFile.close()
+    except IOError:
+    	print('IOError '+fileName)
     os.chdir('..')
     os.chdir(oldPath)
 
